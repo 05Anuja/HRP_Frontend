@@ -1,5 +1,12 @@
 import Axios from "@/utils/axiosConfig";
-import { ArrowLeft, UploadCloud, Download, FileText, Users, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  UploadCloud,
+  Download,
+  FileText,
+  Users,
+  AlertCircle,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -20,6 +27,7 @@ const ImportListForm = () => {
   const [userOptions, setUserOptions] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
   const usersRef = useRef(null);
 
   const [downloadingSample, setDownloadingSample] = useState(false);
@@ -62,7 +70,7 @@ const ImportListForm = () => {
           allUsers.map((u) => ({
             id: u._id ?? u.id,
             name: u.name ?? u.fullName ?? u.email ?? "Unnamed",
-          }))
+          })),
         );
       } catch (err) {
         console.error("Failed to fetch HR users", err);
@@ -78,6 +86,7 @@ const ImportListForm = () => {
     setFile(null);
     setUsers([]);
     setUsersOpen(false);
+    setUserSearch("");
     setErrors({});
   };
 
@@ -95,7 +104,9 @@ const ImportListForm = () => {
 
   const toggleUser = (userId) => {
     setUsers((prev) =>
-      prev.includes(userId) ? prev.filter((u) => u !== userId) : [...prev, userId]
+      prev.includes(userId)
+        ? prev.filter((u) => u !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -122,7 +133,9 @@ const ImportListForm = () => {
       let filename = `${campaign.toLowerCase().replace(/\s+/g, "_")}_sample.csv`;
       const disposition = response.headers?.["content-disposition"];
       if (disposition && disposition.includes("filename=")) {
-        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        const match = disposition.match(
+          /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/,
+        );
         if (match && match[1]) {
           filename = match[1].replace(/['"]/g, "");
         }
@@ -144,7 +157,7 @@ const ImportListForm = () => {
         const postRes = await Axios.post(
           "/lists/sample",
           { campaign },
-          { responseType: "blob" }
+          { responseType: "blob" },
         );
         const blob = new Blob([postRes.data]);
         const downloadUrl = window.URL.createObjectURL(blob);
@@ -152,7 +165,7 @@ const ImportListForm = () => {
         link.href = downloadUrl;
         link.setAttribute(
           "download",
-          `${campaign.toLowerCase().replace(/\s+/g, "_")}_sample.csv`
+          `${campaign.toLowerCase().replace(/\s+/g, "_")}_sample.csv`,
         );
         document.body.appendChild(link);
         link.click();
@@ -200,7 +213,9 @@ const ImportListForm = () => {
       console.error("Failed to import leads", err);
       setErrors((e) => ({
         ...e,
-        submit: err.response?.data?.message || "Failed to import leads. Please try again.",
+        submit:
+          err.response?.data?.message ||
+          "Failed to import leads. Please try again.",
       }));
     } finally {
       setSubmitting(false);
@@ -236,7 +251,10 @@ const ImportListForm = () => {
         <div className="mt-3 flex items-center gap-3 flex-wrap">
           {list?.name && (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-800">
-              List: <strong className="font-semibold text-gray-900">{list.name}</strong>
+              List:{" "}
+              <strong className="font-semibold text-gray-900">
+                {list.name}
+              </strong>
               {listId && <span className="text-gray-400">({listId})</span>}
             </span>
           )}
@@ -254,7 +272,9 @@ const ImportListForm = () => {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-gray-900">1. Download Sample Data</h3>
+              <h3 className="text-sm font-bold text-gray-900">
+                1. Download Sample Data
+              </h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 Download the backend sample template matching the campaign{" "}
                 <span className="font-semibold text-indigo-600">
@@ -321,9 +341,12 @@ const ImportListForm = () => {
             </div>
             {file ? (
               <div className="flex flex-col items-center">
-                <span className="text-sm font-bold text-indigo-900">{file.name}</span>
+                <span className="text-sm font-bold text-indigo-900">
+                  {file.name}
+                </span>
                 <span className="text-xs text-gray-500 mt-0.5">
-                  {(file.size / 1024).toFixed(1)} KB — Click or drag another file to replace
+                  {(file.size / 1024).toFixed(1)} KB — Click or drag another
+                  file to replace
                 </span>
               </div>
             ) : (
@@ -331,7 +354,9 @@ const ImportListForm = () => {
                 <p className="text-sm font-semibold text-gray-800">
                   Click or drag your file here to upload
                 </p>
-                <p className="mt-1 text-xs text-gray-500">Supports CSV, XLSX, or XLS</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Supports CSV, XLSX, or XLS
+                </p>
               </>
             )}
             <input
@@ -341,7 +366,9 @@ const ImportListForm = () => {
               onChange={(e) => handleFileSelect(e.target.files?.[0])}
             />
           </div>
-          {errors.file && <p className="mt-1.5 text-xs text-red-500">{errors.file}</p>}
+          {errors.file && (
+            <p className="mt-1.5 text-xs text-red-500">{errors.file}</p>
+          )}
         </div>
 
         <div className="my-6 border-b border-gray-100" />
@@ -350,52 +377,127 @@ const ImportListForm = () => {
         <div>
           <div className="flex items-center gap-2">
             <Users size={16} className="text-indigo-600" />
-            <h3 className="text-sm font-bold text-gray-900">3. Assign Users (Optional)</h3>
+            <h3 className="text-sm font-bold text-gray-900">
+              3. Assign Users (Optional)
+            </h3>
           </div>
+
           <p className="text-xs text-gray-500 mt-0.5">
             Select one or more team members to assign these imported leads to.
           </p>
 
           <div className="mt-3 relative max-w-md" ref={usersRef}>
-            <button
-              type="button"
-              onClick={() => setUsersOpen((o) => !o)}
-              disabled={loadingUsers}
-              className="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-left text-sm disabled:opacity-60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            {/* Search field */}
+            <div
+              className="flex items-center w-full rounded-lg border border-gray-300
+                         bg-white px-3.5 py-2.5 transition-all
+                         focus-within:border-indigo-400
+                         focus-within:ring-2 focus-within:ring-indigo-100"
             >
-              <span
-                className={
-                  "truncate " +
-                  (selectedUserNames.length ? "text-gray-900 font-medium" : "text-gray-400")
+              <input
+                type="text"
+                value={userSearch}
+                onChange={(e) => {
+                  setUserSearch(e.target.value);
+                  setUsersOpen(true);
+                }}
+                onFocus={() => setUsersOpen(true)}
+                disabled={loadingUsers}
+                placeholder={
+                  loadingUsers ? "Loading users..." : "Search users..."
                 }
+                className="flex-1 min-w-0 bg-transparent text-sm text-gray-900
+                           placeholder:text-gray-400 outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={() => setUsersOpen((o) => !o)}
+                disabled={loadingUsers}
+                className="ml-2 shrink-0 text-gray-400 hover:text-gray-600
+                           disabled:opacity-50 cursor-pointer"
+                aria-label="Toggle user list"
               >
-                {loadingUsers
-                  ? "Loading users..."
-                  : selectedUserNames.length
-                    ? selectedUserNames.join(", ")
-                    : "Select users"}
-              </span>
-              <span className="text-gray-400 ml-1 shrink-0">▾</span>
-            </button>
+                ▾
+              </button>
+            </div>
+
+            {/* Selected users */}
+            {users.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {users.map((userId) => {
+                  const user = userOptions.find((u) => u.id === userId);
+
+                  if (!user) return null;
+
+                  return (
+                    <span
+                      key={userId}
+                      className="inline-flex items-center gap-1.5 rounded-md
+                                 border border-indigo-200 bg-indigo-50
+                                 px-2.5 py-1 text-[11px] font-medium text-indigo-700"
+                    >
+                      <span className="max-w-[180px] truncate">
+                        {user.name}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleUser(userId)}
+                        className="text-indigo-400 hover:text-indigo-700
+                                   font-bold leading-none cursor-pointer"
+                        aria-label={`Remove ${user.name}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Filtered users */}
             {usersOpen && !loadingUsers && (
-              <div className="absolute top-full left-0 mt-1 z-20 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg">
-                {userOptions.length === 0 && (
-                  <p className="px-3.5 py-2 text-xs text-gray-400">No users found</p>
+              <div
+                className="absolute top-full left-0 mt-1 z-30
+                           max-h-56 w-full overflow-y-auto
+                           rounded-lg border border-gray-200
+                           bg-white py-1.5 shadow-lg"
+              >
+                {userOptions.filter((u) =>
+                  u.name
+                    .toLowerCase()
+                    .includes(userSearch.trim().toLowerCase()),
+                ).length === 0 ? (
+                  <p className="px-3.5 py-3 text-xs text-gray-400">
+                    No users found
+                  </p>
+                ) : (
+                  userOptions
+                    .filter((u) =>
+                      u.name
+                        .toLowerCase()
+                        .includes(userSearch.trim().toLowerCase()),
+                    )
+                    .map((u) => (
+                      <label
+                        key={u.id}
+                        className="flex cursor-pointer items-center gap-2.5
+                                   px-3.5 py-2.5 text-sm text-gray-700
+                                   hover:bg-indigo-50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={users.includes(u.id)}
+                          onChange={() => toggleUser(u.id)}
+                          className="h-4 w-4 rounded border-gray-300
+                                     text-indigo-600 focus:ring-indigo-500"
+                        />
+
+                        <span className="truncate">{u.name}</span>
+                      </label>
+                    ))
                 )}
-                {userOptions.map((u) => (
-                  <label
-                    key={u.id}
-                    className="flex cursor-pointer items-center gap-2.5 px-3.5 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={users.includes(u.id)}
-                      onChange={() => toggleUser(u.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="truncate">{u.name}</span>
-                  </label>
-                ))}
               </div>
             )}
           </div>
